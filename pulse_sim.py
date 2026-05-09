@@ -6,23 +6,23 @@ from guppylang.std.builtins import result, comptime
 from guppylang.std.quantum import qubit, measure, rx, ry
 from guppylang.std.angles import angle
 
-# ====================== Sweep parameters ======================
-thetas = np.linspace(0, 4 * np.pi, 60)      # pulse length proxy (Ωt)
-deltas = np.linspace(-2.0, 2.0, 25)         # detuning δ = Δ/Ω  (feel free to shrink for speed)
-shots_per_point = 200                       # start low while testing; increase later for smoother data
+
+thetas = np.linspace(0, 4 * np.pi, 60)      # proxy for pulse length
+deltas = np.linspace(-5.0, 5.0, 25)         # detuning 
+shots_per_point = 200                       
 
 populations = np.zeros((len(deltas), len(thetas)))
 
-print("Starting 2D sweep (θ × δ) — this will take a couple of minutes...")
+#print("Starting 2D sweep")
 
 for i, delta in enumerate(deltas):
     for j, theta_val in enumerate(thetas):
-        # Exact detuned Rabi parameters (classical pre-computation)
+        # calculating Rabi parameters for each beta, theta
         omega_eff = np.sqrt(1.0 + delta**2)
         phi = theta_val * omega_eff
         beta = np.arctan(delta)
 
-        # Fresh Guppy kernel for this exact (θ, δ) pair
+        # Fresh Guppy kernel for each pair; Guppy does not like to be reusable. 
         @guppy
         def experiment() -> None:
             q = qubit()
@@ -50,16 +50,13 @@ for i, delta in enumerate(deltas):
         pop = excited_count / shots_per_point
         populations[i, j] = pop
 
-        # Progress indicator
-        if j % 15 == 0:
-            print(f"  δ = {delta:+.2f} | θ = {theta_val:.2f} → P(|1⟩) = {pop:.3f}")
 
-# ====================== 2D Chevron Plot ======================
+# 'Chevron' plot
 plt.figure(figsize=(9, 6))
-plt.pcolormesh(thetas, deltas, populations, shading='auto', cmap='viridis')
+plt.pcolormesh(deltas, thetas, populations, shading='auto', cmap='viridis')
 plt.colorbar(label='Excited-State Population P(|1⟩)')
-plt.xlabel("On-resonance rotation angle θ = Ωt (rad) — proportional to pulse length")
-plt.ylabel("Detuning δ = Δ/Ω")
+plt.ylabel("On-resonance rotation angle θ = Ωt (rad) — proportional to pulse length")
+plt.xlabel("Detuning δ = Δ/Ω")
 plt.title("Rabi Chevron Plot\n(sweep over pulse length + detuning)")
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
