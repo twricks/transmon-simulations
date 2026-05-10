@@ -4,9 +4,9 @@ from guppylang import guppy
 from guppylang.std.builtins import result, comptime
 from guppylang.std.quantum import qubit, measure, rx, ry
 from guppylang.std.angles import angle
-thetas = np.linspace(0, 4 * np.pi, 60)
-deltas = np.linspace(-5.0, 5.0, 25)
-shots_per_point = 200
+thetas = np.linspace(0, 4 * np.pi, 50)
+deltas = np.linspace(-5.0, 5.0, 50)
+shots_per_point = 20
 populations = np.zeros((len(deltas), len(thetas)))
 for i, delta in enumerate(deltas):
     for j, theta_val in enumerate(thetas):
